@@ -1,11 +1,12 @@
 <template>
   <div class="search-container">
     <div class="title">检索引擎</div>
-    <div class="box">
+    <div class="box" v-loading="loading">
       <el-input
         placeholder="请输入搜索内容"
         v-model="input"
         class="searchClass"
+        @keyup.enter.native="search"
       >
         <el-button
           slot="append"
@@ -14,83 +15,71 @@
         ></el-button>
       </el-input>
     </div>
-    <el-row>
-      <el-col :span="12"><div class="grid-content bg-purple"></div></el-col>
-      <el-col :span="12"
-        ><div class="grid-content bg-purple-light"></div
-      ></el-col>
-    </el-row>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 
-const fetch = (url, method, data) => {
-  return new Promise((resolve, reject) => {
-    axios({ url, method, data })
-      .then(
-        (response) => {
-          resolve(response.data);
-        },
-        (err) => {
-          reject(err);
-        }
-      )
-      .catch((error) => {
-        reject(error);
-      });
-  });
-};
+import { fetch } from "@/utils/requests_axios"
 
 export default {
-  name: "Login",
+  name: "Home",
 
   data() {
     return {
       input: "",
+      loading: false
     };
   },
 
   methods: {
     async post_data() {
-      var path = "http://localhost:5000/login";
+      var path = "http://10.214.223.9:5000/search";
       const json_data = {
-        username: this.loginForm.username,
-        password: this.loginForm.password,
+        'text': this.input
       };
+      this.loading = true;
       await fetch(path, "post", JSON.stringify(json_data)).then((res) => {
-        if (res["code"] == 20000) {
-          this.$router.push("/dashboard");
+        
+        console.log(res)
+        if (res["code"] == 200) {
+          this.$router.push({ name: 'Result', params: { search_result: res['msg'] }});
         } else {
-          alert("密码错误");
+          alert("查询错误");
         }
+        this.loading = false;
       });
     },
 
     search() {
       console.log(this.input);
+      
+      this.post_data();
+      // this.$router.push({ name: 'Result', params: { ids: "chuancan", }});
+      // this.$router.push(
+      //   '/result'
+      // )
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .title {
   font-size: 75px;
-  left: 38%;
-  position: relative;
-  top: 110px;
+  margin-bottom: 50px;
+  margin-left: 20%;
+  width: 500px;
 }
 .box {
-  position: absolute;
-  top: 260px;
-  left: 20%;
-  width: 60%;
+  position: relative;
+  width: 600px;
 }
 .search-container {
-  position: absolute;
-  width: 100%;
+  position: relative;
+  margin-top: 150px;
+  margin-left: 26%;
+  width: 600px;
 }
 .searchClass {
   border: 1px solid #c5c5c5;
