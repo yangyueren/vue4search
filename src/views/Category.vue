@@ -5,13 +5,15 @@
         <div style="position: relative; margin-top: 0%; margin-left: 0%">
           <h2 style="font-size: 28px">商品类别：</h2>
           <el-button
-            type="text"
+            type="plain"
+            round
             v-for="(
               full_category_path_item, full_category_path_item_index
             ) in category_result.full_category_path"
             :key="full_category_path_item_index"
             @click="get_category(full_category_path_item[0])"
-            style="font-size: 20px; padding: 0; color: black"
+            style="font-size: 20px; padding: 0; border:none"
+
           >
             {{ full_category_path_item[1] }}
             <i
@@ -33,11 +35,21 @@
           ></el-tree>
         </el-aside>
         <el-main>
+          <wordcloud
+            :data="defaultWords"
+            nameKey="name"
+            valueKey="value"
+            :color="myColors"
+            :showTooltip="false"
+            :wordClick="wordClickHandler"
+            style="max-height:240px"
+          >
+          </wordcloud>
           <el-row
             v-for="(item, plindex) in category_result.product_list"
             :key="plindex"
           >
-            <el-row :gutter="10" style="border-style: none; margin-bottom: 0px;">
+            <el-row :gutter="10" style="border-style: none; margin-bottom: 0px">
               <el-col :span="8"
                 ><div class="grid-content bg-purple">
                   <el-image
@@ -49,8 +61,8 @@
               ></el-col>
               <el-col :span="16"
                 ><div class="grid-content bg-purple">
-                  <p>主题：{{ item.title }}</p>
-                  <p>标签属性：{{ item.attribute }} </p>
+                  <p>标题：{{ item.title }}</p>
+                  <p>标签属性：{{ item.attribute }}</p>
                 </div></el-col
               >
             </el-row>
@@ -66,9 +78,13 @@
 
 <script>
 import { fetch } from "@/utils/requests_axios";
+import wordcloud from "vue-wordcloud";
 
 export default {
   name: "Result",
+  components: {
+    wordcloud,
+  },
 
   data() {
     return {
@@ -76,66 +92,93 @@ export default {
       loading: false,
 
       data: [
-        {
-          label: "一级 1",
-          children: [
-            {
-              label: "二级 1-1",
-              children: [
-                {
-                  label: "三级 1-1-1",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: "一级 2",
-          children: [
-            {
-              label: "二级 2-1",
-              children: [
-                {
-                  label: "三级 2-1-1",
-                },
-              ],
-            },
-            {
-              label: "二级 2-2",
-              children: [
-                {
-                  label: "三级 2-2-1",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: "一级 3",
-          children: [
-            {
-              label: "二级 3-1",
-              children: [
-                {
-                  label: "三级 3-1-1",
-                },
-              ],
-            },
-            {
-              label: "二级 3-2",
-              children: [
-                {
-                  label: "三级 3-2-1",
-                },
-              ],
-            },
-          ],
-        },
+        // {
+        //   label: "一级 1",
+        //   children: [
+        //     {
+        //       label: "二级 1-1",
+        //       children: [
+        //         {
+        //           label: "三级 1-1-1",
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
+        // {
+        //   label: "一级 2",
+        //   children: [
+        //     {
+        //       label: "二级 2-1",
+        //       children: [
+        //         {
+        //           label: "三级 2-1-1",
+        //         },
+        //       ],
+        //     },
+        //     {
+        //       label: "二级 2-2",
+        //       children: [
+        //         {
+        //           label: "三级 2-2-1",
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
+        // {
+        //   label: "一级 3",
+        //   children: [
+        //     {
+        //       label: "二级 3-1",
+        //       children: [
+        //         {
+        //           label: "三级 3-1-1",
+        //         },
+        //       ],
+        //     },
+        //     {
+        //       label: "二级 3-2",
+        //       children: [
+        //         {
+        //           label: "三级 3-2-1",
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
       ],
       defaultProps: {
         children: "children",
         label: "label",
       },
+      myColors: ["#1f77b4", "#629fc9", "#94bedb", "#c9e0ef"],
+      defaultWords: [
+        // {
+        //   "name": "Cat",
+        //   "value": 26
+        // },
+        // {
+        //   "name": "fish",
+        //   "value": 19
+        // },
+        // {
+        //   "name": "things",
+        //   "value": 18
+        // },
+        // {
+        //   "name": "look",
+        //   "value": 16
+        // },
+        // {
+        //   "name": "two",
+        //   "value": 15
+        // },
+        // {
+        //   "name": "fun",
+        //   "value": 9
+        // }
+      ],
 
       category_result: {
         category_id: 5629,
@@ -214,7 +257,7 @@ export default {
 
   mounted() {
     this.category_result = this.$route.params.category_result;
-    console.log('get info function mounted')
+    console.log("get info function mounted");
     console.log(this.category_result);
     this.data = new Array();
     for (var i = 0; i < this.category_result.child_category.length; i++) {
@@ -223,16 +266,33 @@ export default {
       // console.log(t)
       this.data.push(t);
     }
+
+    console.log('keyword')
+    console.log(this.category_result.keyword)
+    this.get_words(this.category_result.keyword)
   },
 
   methods: {
+    wordClickHandler(){
+      console.log('wordclick')
+    },
     handleNodeClick(data) {
       console.log(data);
+      this.get_category(data["id"]);
+    },
+
+    get_words(data) {
+      this.defaultWords = [] ;
+      for (var i = 0; i < data.length; i++) {
+        var t = { name: data[i][0], value: data[i][1] };
+        this.defaultWords.push(t)
+      }
     },
 
     add_node(cate) {
       var data = {};
       data["label"] = cate["name"];
+      data["id"] = cate["id"];
       if (cate["child_node"].length > 0) {
         data["children"] = new Array();
       }
@@ -249,19 +309,28 @@ export default {
     },
 
     async post_category_data(cid) {
-      var path = "http://10.214.223.9:5000/get_category_info";
+      var path = "/api/get_category_info";
       const json_data = {
         category_id: cid,
       };
-      console.log('get category info')
-      console.log(json_data)
+      console.log("get category info");
+      console.log(json_data);
       await fetch(path, "post", JSON.stringify(json_data)).then((res) => {
         console.log(res);
         if (res["code"] == 200) {
-          this.$router.push({
-            name: "Category",
-            params: { category_info: res["msg"] },
-          });
+          this.category_result = res["msg"];
+          console.log("get info post category data inside page");
+          console.log(this.category_result);
+          this.data = new Array();
+          for (var i = 0; i < this.category_result.child_category.length; i++) {
+            // console.log(this.category_result.child_category[i])
+            var t = this.add_node(this.category_result.child_category[i]);
+            // console.log(t)
+            this.data.push(t);
+          }
+          console.log('keyword')
+          console.log(this.category_result.keyword)
+          this.get_words(this.category_result.keyword)
         } else {
           alert("查询错误");
         }

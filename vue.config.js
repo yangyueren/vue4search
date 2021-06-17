@@ -53,7 +53,8 @@ module.exports = {
             // proxy: 'http://localhost:8080'   // 配置跨域处理,只有一个代理
             proxy: { //配置多个跨域
                 "/api": {
-                    target: "http://172.11.11.11:7071",
+                    target: "http://10.214.223.9:5000/",
+                    // target: "http://127.0.0.1:5000/",
                     changeOrigin: true,
                     // ws: true,//websocket支持
                     secure: false,
